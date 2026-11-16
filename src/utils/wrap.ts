@@ -1,15 +1,24 @@
 /**
  * Wrapping text into lines of a maximum width.
  */
-import { strlen, textUnits } from './text';
+import { escapeSequencePattern, strlen, textUnits } from './text';
 
 /** Splits `input` into its words and the whitespace between them (`separators[k]` follows `words[k]`). */
 function splitWords(input: string): { words: string[]; separators: string[] } {
-  const parts = input.split(/(\s+)/);
-  return {
-    words: parts.filter((_, i) => i % 2 === 0),
-    separators: parts.filter((_, i) => i % 2 === 1),
-  };
+  const words: string[] = [];
+  const separators: string[] = [];
+  const pattern = new RegExp(`${escapeSequencePattern().source}|(\\s+)`, 'g');
+  let start = 0;
+  for (const match of input.matchAll(pattern)) {
+    const whitespace = match[1];
+    if (whitespace) {
+      words.push(input.slice(start, match.index));
+      separators.push(whitespace);
+      start = match.index + whitespace.length;
+    }
+  }
+  words.push(input.slice(start));
+  return { words, separators };
 }
 
 /**
@@ -22,24 +31,28 @@ function wrapOnWords(maxLength: number, input: string): string[] {
   let line: string[] = [];
   let lineLength = 0;
   words.forEach((word, k) => {
-    const whitespace = separators[k - 1]; // the whitespace before this word (none before the first)
-    let newLength = lineLength + strlen(word);
-    if (whitespace) {
-      newLength += whitespace.length;
-    }
+    const whitespace = separators[k - 1] ?? '';
+    const wordLength = strlen(word);
+    const newLength = lineLength + whitespace.length + wordLength;
     if (newLength > maxLength) {
+      if (word && wordLength === 0) {
+        line.push(word); // Keep a trailing escape sequence on the same line.
+        return;
+      }
       if (lineLength !== 0) {
         lines.push(line.join(''));
+        line = [];
       }
-      line = [word];
-      lineLength = strlen(word);
+      line.push(word); // Preserve any zero-width prefix when discarding leading whitespace.
+      lineLength = wordLength;
     } else {
-      line.push(whitespace || '', word);
+      line.push(whitespace, word);
       lineLength = newLength;
     }
   });
-  if (lineLength) {
-    lines.push(line.join(''));
+  const remaining = line.join('');
+  if (remaining) {
+    lines.push(remaining);
   }
   return lines;
 }

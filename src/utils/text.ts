@@ -21,7 +21,7 @@ export interface TextUnit {
 }
 
 /** SGR sequences and OSC 8 hyperlink sequences: zero width, never split. */
-function escapeSequencePattern(): RegExp {
+export function escapeSequencePattern(): RegExp {
   return new RegExp(`${sgrPattern().source}|${/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)/.source}`, 'g');
 }
 

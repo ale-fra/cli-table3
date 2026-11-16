@@ -1,7 +1,6 @@
+import { HYPERLINK_END } from './hyperlink';
 import { strlen, textUnits } from './text';
 import { wordWrap } from './wrap';
-
-const hyperlinkCloseSequence = '\u001b]8;;\u0007';
 
 function breakLine(maxWidth: number, line: string): string[] {
   const chunks: string[] = [];
@@ -32,17 +31,8 @@ function breakLine(maxWidth: number, line: string): string[] {
  */
 export function wrapToWidth(maxWidth: number, input: string, wrapOnWordBoundary = true): string[] {
   maxWidth = Math.max(1, maxWidth);
-  const output: string[] = [];
-  input.split('\n').forEach((line) => {
-    const pieces = wrapOnWordBoundary ? wordWrap(maxWidth, line) : [line];
-    pieces.forEach((piece) => {
-      if (strlen(piece) <= maxWidth) {
-        output.push(piece);
-      } else {
-        output.push.apply(output, breakLine(maxWidth, piece));
-      }
-    });
-  });
+  const pieces = wrapOnWordBoundary ? wordWrap(maxWidth, input) : input.split('\n');
+  const output = pieces.flatMap((piece) => (strlen(piece) <= maxWidth ? [piece] : breakLine(maxWidth, piece)));
   // A hyperlink must end before the cell padding/border and restart on the next line,
   // including breaks introduced by wordWrap (not just hard word breaks).
   let openLink = '';
@@ -51,7 +41,7 @@ export function wrapToWidth(maxWidth: number, input: string, wrapOnWordBoundary 
     for (const match of line.matchAll(/\u001b\]8;[^;]*;([^\u0007\u001b]*)(?:\u0007|\u001b\\)/g)) {
       openLink = match[1] ? match[0] : '';
     }
-    return prefix + line + (openLink ? hyperlinkCloseSequence : '');
+    return prefix + line + (openLink ? HYPERLINK_END : '');
   });
 }
 

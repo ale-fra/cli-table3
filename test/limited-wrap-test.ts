@@ -35,11 +35,24 @@ describe('wrapToWidth', () => {
     expect(lines).toEqual(['\u001b[31mabcd', 'efgh\u001b[39m']);
   });
 
+  it('preserves style escapes adjacent to whitespace trimmed by a word break', () => {
+    const open = '\u001b[31m';
+    const close = '\u001b[39m';
+    expect(wrapToWidth(3, `${open} ABCDEF ${close}`)).toEqual([`${open}ABC`, `DEF${close}`]);
+    expect(wrapToWidth(3, `${close}\nabc`)).toEqual([close, 'abc']);
+  });
+
   it('closes and re-opens hyperlinks at line breaks', () => {
     const link = utils.hyperlink('http://x.io', 'abcdef');
     const open = '\u001b]8;;http://x.io\u0007';
     const close = '\u001b]8;;\u0007';
     expect(wrapToWidth(3, link, false)).toEqual([`${open}abc${close}`, `${open}def${close}`]);
+  });
+
+  it('keeps whitespace inside a hyperlink target out of word splitting', () => {
+    const open = '\u001b]8;;https://example.com/a b\u0007';
+    const close = '\u001b]8;;\u0007';
+    expect(wrapToWidth(3, `${open}abcdef${close}`)).toEqual([`${open}abc${close}`, `${open}def${close}`]);
   });
 
   it('keeps empty lines', () => {
