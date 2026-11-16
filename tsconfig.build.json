@@ -1,0 +1,19 @@
+{
+  // Incremental build of src/ into dist/ (CommonJS + declarations + source maps).
+  // The build state lives in .cache/, so unchanged files are not rebuilt.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "allowImportingTsExtensions": false,
+    "rootDir": "src",
+    "noEmit": false,
+    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noEmitOnError": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".cache/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    // JS/TS/JSON only. Markdown docs are generated (pnpm docs) and must stay byte-identical.
+    // dist/ and .cache/ are build output.
+    "includes": ["**/*.{js,mjs,cjs,ts,mts,cts,json,jsonc}", "!coverage", "!dist", "!.cache"]
+  },
+  // Same style as the previous Prettier config (printWidth 120, singleQuote, trailingComma es5).
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "es5"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        // ANSI escape sequences (\u001b, \x07) are matched on purpose.
+        // (Was 'no-control-regex': 'off' in the ESLint config.)
+        "noControlCharactersInRegex": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      // The source of the example functions is printed verbatim into basic-usage.md and
+      // advanced-usage.md (see lib/print-example.js), so it must not be rewritten by tooling.
+      // `pnpm docs:check` guards this.
+      "includes": ["examples/**"],
+      "formatter": { "enabled": false },
+      "linter": {
+        "rules": {
+          "style": { "useConst": "off", "useTemplate": "off" },
+          "complexity": { "useArrowFunction": "off" }
+        }
+      }
+    }
+  ]
+}
