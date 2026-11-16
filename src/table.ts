@@ -122,17 +122,21 @@ export class Table extends Array<TableRow> {
     }
 
     const limits = resolveMaxColWidths(options.maxColWidths, cells);
-    const colWidths = computeWidths(options.colWidths, cells, limits);
-    for (const row of cells) {
-      for (const cell of row) {
-        if (cell instanceof Cell && limits.slice(cell.x, cell.x + cell.colSpan).some((limit) => limit !== undefined)) {
-          cell.wrapToWidth({ ...options, colWidths });
+    const columnOptions = { ...options, colWidths: computeWidths(options.colWidths, cells, limits) };
+    if (limits.length > 0) {
+      for (const row of cells) {
+        for (const cell of row) {
+          if (
+            cell instanceof Cell &&
+            limits.slice(cell.x, cell.x + cell.colSpan).some((limit) => limit !== undefined)
+          ) {
+            cell.wrapToWidth(columnOptions);
+          }
         }
       }
     }
     const sized = {
-      ...options,
-      colWidths,
+      ...columnOptions,
       rowHeights: computeHeights(options.rowHeights, cells),
     };
     for (const row of cells) {

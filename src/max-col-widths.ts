@@ -6,6 +6,8 @@ export function resolveMaxColWidths(
   option: TableInstanceOptions['maxColWidths'],
   cells: readonly LayoutCell[][]
 ): (number | undefined)[] {
+  if (option === undefined) return [];
+
   const isLimit = (value: unknown): value is number => typeof value === 'number' && value > 0 && Number.isFinite(value);
   let columnCount = 0;
   for (const row of cells) {
