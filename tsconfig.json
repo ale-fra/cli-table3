@@ -1,0 +1,32 @@
+{
+  // Type check of everything (sources, tests, examples, scripts): used by editors and by
+  // `pnpm typecheck`. The build (tsconfig.build.json) compiles src/ only.
+  "compilerOptions": {
+    // Runtime: Node.js >= 22.12
+    "target": "es2023",
+    "lib": ["es2023"],
+    "types": ["node", "vitest/globals"],
+
+    // The package is CommonJS ("type": "commonjs"): .ts files are compiled to CommonJS.
+    // Files run directly by Node.js (scripts, examples) are ES modules (.mts).
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "isolatedModules": true,
+    // (not "erasableSyntaxOnly": the CommonJS entry point needs `export =`, see src/index.ts)
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    // Scripts and tests import .mts files by name; they are run by Node.js / vitest, not compiled.
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": ["src", "test", "examples", "lib", "scripts", "env", "vitest.config.ts"]
+}

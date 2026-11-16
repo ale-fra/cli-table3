@@ -1,45 +1,58 @@
 {
   "name": "cli-table3",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "description": "Pretty unicode tables for the command line. Based on the original cli-table.",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
-    "src/",
-    "index.d.ts",
-    "index.js"
+    "dist/",
+    "src/"
   ],
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "ansis": "3.10.0",
+    "ansis": "4.5.0",
     "string-width": "^4.2.0"
   },
   "devDependencies": {
-    "@colors/colors": "1.5.0",
+    "@arethetypeswrong/cli": "0.18.5",
+    "@biomejs/biome": "2.6.6",
+    "@types/node": "^22.20.5",
+    "@vitest/coverage-v8": "5.1.0",
     "cli-table": "^0.3.1",
-    "eslint": "^6.0.0",
-    "eslint-config-prettier": "^6.0.0",
-    "eslint-plugin-prettier": "^3.0.0",
-    "jest": "^25.2.4",
-    "jest-runner-eslint": "^0.7.0",
     "lerna-changelog": "^1.0.1",
-    "prettier": "2.3.2"
-  },
-  "optionalDependencies": {
+    "publint": "0.3.25",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
   },
   "scripts": {
+    "build": "node scripts/build.mts",
+    "clean": "node -e \"for (const d of ['dist', '.cache', 'coverage']) require('node:fs').rmSync(d, { recursive: true, force: true })\"",
+    "prepack": "pnpm clean && pnpm build",
     "changelog": "lerna-changelog",
-    "docs": "node ./scripts/update-docs.js",
-    "prettier": "prettier --write '{examples,lib,scripts,src,test}/**/*.js'",
-    "test": "jest --color",
-    "test:coverage": "jest --color --collectCoverage",
-    "test:watch": "jest --color --watchAll --notify"
+    "docs:generate": "pnpm build && node scripts/update-docs.mts",
+    "docs:check": "pnpm docs:generate && git diff --exit-code -- basic-usage.md advanced-usage.md",
+    "format": "biome check --write .",
+    "lint": "biome ci .",
+    "typecheck": "pnpm build && tsc -p tsconfig.json",
+    "test": "vitest run --coverage && pnpm typecheck && pnpm lint",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "check:package": "publint && attw --pack .",
+    "examples": "pnpm build && node scripts/print-examples.mts",
+    "smoke": "node scripts/smoke-test.mts"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cli-table/cli-table3.git"
+    "url": "git+https://github.com/cli-table/cli-table3.git"
   },
   "keywords": [
     "node",
@@ -53,14 +66,13 @@
     "colors",
     "grid"
   ],
-  "author": "James Talmage",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/cli-table/cli-table3/issues"
   },
   "homepage": "https://github.com/cli-table/cli-table3",
   "engines": {
-    "node": "10.* || >= 12.*"
+    "node": ">=22.12"
   },
   "changelog": {
     "repo": "cli-table/cli-table3",
@@ -72,32 +84,11 @@
       "internal": ":house: Internal"
     }
   },
-  "jest": {
-    "projects": [
-      {
-        "displayName": "test",
-        "testMatch": [
-          "<rootDir>/test/**/*.js"
-        ]
-      },
-      {
-        "runner": "jest-runner-eslint",
-        "displayName": "lint",
-        "testMatch": [
-          "<rootDir>/examples/**/*.js",
-          "<rootDir>/lib/**/*.js",
-          "<rootDir>/scripts/**/*.js",
-          "<rootDir>/src/**/*.js",
-          "<rootDir>/test/**/*.js"
-        ]
-      }
-    ]
+  "packageManager": "pnpm@10.34.5",
+  "pnpm": {
+    "overrides": {
+      "cli-table>colors": "npm:@colors/colors@1.5.0"
+    }
   },
-  "prettier": {
-    "printWidth": 120,
-    "tabWidth": 2,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
-  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+  "type": "commonjs"
 }

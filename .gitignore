@@ -4,3 +4,7 @@ node_modules/
 coverage/
 JasmineAdapter-1.1.2.js
 jasmine-1.1.0.js
+
+.cache/
+build/
+dist/

@@ -8,11 +8,11 @@ This utility allows you to render unicode-aided tables on the command line from
 your node.js scripts.
 
 `cli-table3` is based on (and api compatible with) the original [cli-table](https://github.com/Automattic/cli-table),
-and [cli-table2](https://github.com/jamestalmage/cli-table2), which are both
+and [cli-table2](https://www.npmjs.com/package/cli-table2), which are both
 unmaintained. `cli-table3` includes all the additional features from
 `cli-table2`.
 
-![Screenshot](https://i.imgur.com/sYq4T.png)
+![Example table](./examples/screenshots/basic-usage-with-colors.png)
 
 ## Features not in the original cli-table
 
@@ -30,8 +30,8 @@ unmaintained. `cli-table3` includes all the additional features from
 
 - Customizable characters that constitute the table.
 - [Color/background](#colors) styling the table through
-  [<s>colors.js</s>](https://github.com/marak/colors.js)
-  [ansis](https://github.com/webdiscus/ansis).
+  [<s>colors.js</s>](https://www.npmjs.com/package/colors)
+  [ansis](https://www.npmjs.com/package/ansis).
 - Column width customization
 - Text truncation based on predefined widths
 - Text alignment (left, right, center)
@@ -43,6 +43,28 @@ unmaintained. `cli-table3` includes all the additional features from
 ```bash
 npm install cli-table3
 ```
+
+Requires Node.js >= 22.12.
+
+### TypeScript and ES modules
+
+cli-table3 is written in TypeScript and ships its type definitions. It is a CommonJS package
+that exports the `Table` class, and can be used from CommonJS and ES modules:
+
+```typescript
+import Table from 'cli-table3'; // ES module, or TypeScript with esModuleInterop
+// const Table = require('cli-table3'); // CommonJS
+// import Table = require('cli-table3'); // TypeScript, CommonJS output
+
+const options: Table.TableConstructorOptions = { head: ['Name', 'Value'], colWidths: [10, 20] };
+const table: Table.Table = new Table(options);
+table.push(['a', 1], [{ content: 'spans both columns', colSpan: 2 }]);
+console.log(table.toString());
+```
+
+The types are available as `Table.<name>`: `TableConstructorOptions`, `TableInstanceOptions`,
+`Cell`, `CellOptions`, `CellValue`, `HorizontalTableRow`, `VerticalTableRow`, `CrossTableRow`,
+`HorizontalAlignment`, `VerticalAlignment`, `CharName`, ...
 
 ## How to use
 
@@ -176,7 +198,9 @@ The color and styles can be combined.
 
 ### Base 16 colors and styles
 
-See the full list of [base named colors and styles](https://github.com/webdiscus/ansis#base-ansi-16-colors-and-styles).
+See the full list of [base named colors and styles](https://www.npmjs.com/package/ansis#base-ansi-16-colors-and-styles).
+
+The legacy names `grey`, `bgGrey` and `strike` are still accepted as aliases of `gray`, `bgGray` and `strikethrough`.
 
 ### Truecolor
 
@@ -196,24 +220,16 @@ var table = new Table({
   } 
 });
 
-table.push(['Walter White', '50']);
+table.push(['Sample row A', '50']);
 
 console.log(table.toString());
 ```
-
-Outputs:
-
-![Screenshot](https://i.imgur.com/mUNLz6l.png)
-
 For example, the header text in truecolor `orange` and styled as `italic`:
 ```js
 style: {
   head: ['hex(#FFA500)', 'italic'],
 }
 ```
-
-![Screenshot](https://i.imgur.com/mVieAvj.png)
-
 
 ### Colorizing table border
 
@@ -227,12 +243,9 @@ style: {
 }
 ```
 
-![Screenshot](https://i.imgur.com/NWzB3nL.png)
-
-
 ### Colorizing table cells
 
-To colorize cells can be used [ansis](https://github.com/webdiscus/ansis), which is already included in this package as an optional dependency.
+To colorize cells can be used [ansis](https://www.npmjs.com/package/ansis), which is already included in this package as a dependency.
 
 For example, apply an individual color to the single cell in the table body:
 ```js
@@ -249,17 +262,12 @@ var table = new Table({
 
 table.push(
   // apply a color to cells
-  [ansi.green('Walter White'), ansi.red('50')],
-  [ansi.hex('#FF69B4')('Jesse Pinkman'), ansi.blueBright('24')],
+  [ansi.green('Sample row A'), ansi.red('50')],
+  [ansi.hex('#FF69B4')('Sample row AB'), ansi.blueBright('24')],
 );
 
 console.log(table.toString());
 ```
-
-Outputs:
-
-![Screenshot](https://i.imgur.com/EhnOn9i.png)
-
 For example, colorize the table body with one color:
 ```js
 var { green } = require('ansis'); // use a named import when using a few colors
@@ -274,19 +282,14 @@ var table = new Table({
 });
 
 table.push(
-  ['Walter White', '50'],
-  ['Jesse Pinkman', '24'],
+  ['Sample row A', '50'],
+  ['Sample row AB', '24'],
 );
 
 var output = green(table.toString()); // colorize the whole table
 
 console.log(output);
 ```
-
-Outputs:
-
-![Screenshot](https://i.imgur.com/TGUUzsB.png)
-
 
 ### Colorizing table background
 
@@ -306,8 +309,8 @@ var table = new Table({
 });
 
 table.push(
-  ['Walter White', '50'],
-  ['Jesse Pinkman', '24'],
+  ['Sample row A', '50'],
+  ['Sample row AB', '24'],
 );
 
 var output = green.bgHex('#3d239d')(table.toString()); // <- add a background to the table
@@ -315,75 +318,78 @@ var output = green.bgHex('#3d239d')(table.toString()); // <- add a background to
 console.log(output);
 ```
 
-Outputs:
-
-![Screenshot](https://i.imgur.com/SY5ikmJ.png)
-
-
 ## Debugging
 
 Later versions of cli-table3 supporting debugging your table data.
 
 Enable and use debugging:
 
-```
+```javascript
 var table = new Table({ debug: 1 });
-table.push([{}, {},}); // etc.
+table.push([{}, {}]); // etc.
 
 console.log(table.toString());
 table.messages.forEach((message) => console.log(message));
 ```
 
-If you are rendering multiple tables with debugging on run `Table.reset()` after
-rendering each table.
+The `debug` option sets the level of detail; a level includes the levels below it:
+
+| Level | Messages |
+|---|---|
+| `1` (or `true`) | Blocking issues: the table cannot be rendered as given and had to be changed (e.g. a missing cell was added, a row span was limited). |
+| `2` | Information about each rendered cell. |
+| `3` | Non-blocking issues: the table is rendered as given, but an option is ignored (e.g. an invalid style name). Details about the layout. |
+
+Messages are collected per table and accumulate each time the table is rendered.
+`Table.reset()` is deprecated and no longer needed: it does nothing.
 
 ## Build Targets
 
-Clone the repository and run `yarn install` to install all its submodules, then run one of the following commands:
+Development requires Node.js >= 22.18 (scripts are TypeScript, run by Node.js directly) and [pnpm](https://pnpm.io) (the exact version is pinned in the
+`packageManager` field of `package.json`).
 
-###### Run the tests with coverage reports.
+Clone the repository and run `pnpm install` to install all its dependencies, then run one of the following commands:
+
+###### Run all checks (tests with coverage thresholds, type check, lint), as CI does.
 ```bash
-$ yarn test:coverage
+$ pnpm test
 ```
 
 ###### Run the tests every time a file changes.
 ```bash
-$ yarn test:watch
+$ pnpm test:watch
+```
+
+###### Build `src/` into `dist/` (incremental).
+```bash
+$ pnpm build
 ```
 
 ###### Update the documentation.
 ```bash
-$ yarn docs
+$ pnpm docs:generate
 ```
 
-## Credits
+###### Check the package (publint, Are The Types Wrong).
+```bash
+$ pnpm check:package
+```
 
-- James Talmage - author &lt;james.talmage@jrtechnical.com&gt; ([jamestalmage](https://github.com/jamestalmage))
-- Guillermo Rauch - author of the original cli-table &lt;guillermo@learnboost.com&gt; ([Rauchg](https://github.com/rauchg))
+###### Smoke test: install the packed package into new CommonJS, ES module and TypeScript projects and run them.
+```bash
+$ pnpm smoke
+```
+
+###### Print the examples to the console.
+```bash
+$ pnpm examples
+```
+
+Everything is TypeScript. The sources in `src/` are compiled into `dist/` by `tsc` (incremental;
+also run automatically before the tests). The tests (`test/`) run against `dist/`, i.e. the
+published code, and every module must be fully covered. `test/types/` checks the published type
+definitions. The scripts and examples (`.mts`) are run by Node.js directly.
 
 ## License
 
-(The MIT License)
-
-Copyright (c) 2014 James Talmage &lt;james.talmage@jrtechnical.com&gt;
-
-Original cli-table code/documentation: Copyright (c) 2010 LearnBoost &lt;dev@learnboost.com&gt;
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+[MIT](./LICENSE)

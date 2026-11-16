@@ -13,9 +13,9 @@
     ┌──────┬─────────────────────┬─────────────────────────┬─────────────────┐
     │ Rel  │ Change              │ By                      │ When            │
     ├──────┼─────────────────────┼─────────────────────────┼─────────────────┤
-    │ v0.1 │ Testing something … │ rauchg@gmail.com        │ 7 minutes ago   │
+    │ v0.1 │ Testing something … │ user@example.com        │ 7 minutes ago   │
     ├──────┼─────────────────────┼─────────────────────────┼─────────────────┤
-    │ v0.1 │ Testing something … │ rauchg@gmail.com        │ 8 minutes ago   │
+    │ v0.1 │ Testing something … │ user@example.com        │ 8 minutes ago   │
     └──────┴─────────────────────┴─────────────────────────┴─────────────────┘
 ```javascript
       // For most of these examples, and most of the unit tests we disable colors.
@@ -31,8 +31,8 @@
       });
 
       table.push(
-        ['v0.1', 'Testing something cool', 'rauchg@gmail.com', '7 minutes ago'],
-        ['v0.1', 'Testing something cool', 'rauchg@gmail.com', '8 minutes ago']
+        ['v0.1', 'Testing something cool', 'user@example.com', '7 minutes ago'],
+        ['v0.1', 'Testing something cool', 'user@example.com', '8 minutes ago']
       );
 
 ```
@@ -118,7 +118,7 @@
 ##### Use ansi colors (i.e. colors.js) to style text within the cells at will, even across multiple lines
 ![table image](./examples/screenshots/multi-line-colors.png)
 ```javascript
-      let table = new Table({ style: { border: [], header: [] } });
+      let table = new Table({ style: { border: [], head: [] } });
 
       table.push([colors.red('Hello\nhow\nare\nyou?'), colors.blue('I\nam\nfine\nthanks!')]);
 
@@ -134,7 +134,7 @@
     └───────┴─────────┴───────────────────┴──────────────┘
 ```javascript
       let table = new Table({
-        style: { border: [], header: [] },
+        style: { border: [], head: [] },
         colWidths: [7, 9], // Requires fixed column widths
         wordWrap: true,
       });
@@ -158,7 +158,7 @@
     └───┴───┘
 ```javascript
       const table = new Table({
-        style: { border: [], header: [] },
+        style: { border: [], head: [] },
         colWidths: [3, 3], // colWidths must all be greater than 2!!!!
         wordWrap: true,
         wrapOnWordBoundary: false,
@@ -178,8 +178,6 @@
     ├───────────┴─────┴─────┤
     │ http://example.com    │
     └───────────────────────┘
-    
-    Note: Links are not displayed in documentation examples.
 ```javascript
       const table = new Table({
         colWidths: [11, 5, 5],
