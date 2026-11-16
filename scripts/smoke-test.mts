@@ -41,6 +41,11 @@ const CHECK = `
     throw new Error('unexpected output');
   }
   if (!output.includes('\\u001b[31m')) throw new Error('the header is not red');
+  const limited = new Table({head: ['h'], maxColWidths: 6, style: {head: ['brightRed'], border: []}});
+  limited.push(['abcdefgh']);
+  const capped = limited.toString();
+  if (!capped.includes('abcd') || !capped.includes('efgh') || capped.includes('…')) throw new Error('maxColWidths failed');
+  if (!capped.includes('\\u001b[91m')) throw new Error('legacy style alias failed');
 `;
 
 const CONSUMERS: Record<string, { files: Record<string, string>; run: string[] }> = {
@@ -54,9 +59,11 @@ const CONSUMERS: Record<string, { files: Record<string, string>; run: string[] }
   },
   typescript: {
     files: {
+      'esm.mts':
+        "import Table from 'cli-table3'; const table: Table.Table = new Table({ maxColWidths: [undefined, 8] }); table.push(['x']); export default table;",
       'index.ts': [
         "import Table from 'cli-table3';",
-        "const options: Table.TableConstructorOptions = { style: { head: ['bold'], compact: true } };",
+        "const options: Table.TableConstructorOptions = { maxColWidths: 12, style: { head: ['bold'], compact: true } };",
         'const typed: Table.Table = new Table(options);',
         "const cell: Table.Cell = { content: 'x', colSpan: 2, hAlign: 'right' };",
         'typed.push([cell]);',

@@ -94,6 +94,23 @@ table.push(
 console.log(table.toString());
 ```
 
+### Maximum column widths
+
+`maxColWidths` accepts one number for all columns, or an array such as `[null, 20, 8]`.
+Columns keep their natural width up to that limit (including padding). Longer content wraps;
+long words are broken without splitting Unicode grapheme clusters or ANSI sequences.
+`null`, missing entries and invalid limits mean no limit; positive limits are rounded down.
+A limit smaller than the padding plus the widest character is raised to keep content visible.
+Fixed `colWidths` take precedence. `wordWrap: false` on the table or a cell opts into truncation.
+Spanning cells use the combined width; crossing a limited column does not widen unlimited columns
+that have their own content. Computed widths stay private to each render.
+
+```javascript
+const table = new Table({ head: ['ID', 'Description'], maxColWidths: [null, 20] });
+table.push(['1', 'A long description wraps instead of being truncated']);
+console.log(table.toString());
+```
+
 ### Vertical Tables
 ```javascript
 var Table = require('cli-table3');
@@ -194,7 +211,10 @@ console.log(table.toString());
 ## Colors
 
 You can colorize the text in the table head and the table border with 16 named colors or with truecolor using a hex code.
-The color and styles can be combined.
+The color and styles can be combined. Legacy colors.js names such as `brightRed`, `bgBrightBlue`
+and `redBG` are accepted alongside the Ansis names. Only style chains are accepted; Ansis helper
+methods are rejected. As in the TypeScript snapshot, an invalid entry leaves the whole list
+unstyled and is reported at debug level 3.
 
 ### Base 16 colors and styles
 

@@ -21,6 +21,7 @@ import {
   strlen,
   truncate,
   wordWrap,
+  wrapToWidth,
 } from '../utils';
 import { type CellChars, type CharKey, resolveChars, resolvePadding } from './inherited-options';
 import { ColSpanCell, RowSpanCell } from './span-cells';
@@ -146,6 +147,23 @@ export class Cell {
       return this.wrapLines(wordWrap(width, this.content, wrapOnWordBoundary));
     }
     return this.wrapLines(this.content.split('\n'));
+  }
+
+  wrapToWidth(tableOptions: Pick<SizedOptions, 'colWidths'> & LayoutOptions): void {
+    const { wordWrap = tableOptions.wordWrap } = this.options;
+    if (wordWrap === false) {
+      return;
+    }
+    const { wrapOnWordBoundary: tableWrapOnWordBoundary = true } = tableOptions;
+    const { wrapOnWordBoundary = tableWrapOnWordBoundary } = this.options;
+
+    const spannedWidths = tableOptions.colWidths.slice(this.x, this.x + this.colSpan);
+    const width = spannedWidths.reduce(sumPlusOne, -1) - this.paddingLeft - this.paddingRight;
+    const contentLines = this.content.split('\n');
+    const fits = contentLines.every((line) => strlen(line) <= width);
+
+    this.lines = this.wrapLines(fits ? contentLines : wrapToWidth(width, this.content, wrapOnWordBoundary));
+    this.desiredHeight = this.lines.length;
   }
 
   private wrapLines(computedLines: string[]): string[] {

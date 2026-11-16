@@ -298,6 +298,72 @@ describe('tableLayout', () => {
       computeWidths(widths, cells);
       expect(widths).toEqual([3, 7, 8]);
     });
+    describe('with maximum widths', () => {
+      it('limits columns that are wider than their maximum', () => {
+        const widths: Array<number | null> = [];
+        const cells = [
+          [mc(0, 0, 7), mc(0, 1, 3), mc(0, 2, 5)],
+          [mc(1, 0, 8), mc(1, 1, 5), mc(1, 2, 2)],
+        ];
+        computeWidths(widths, cells, [6, 6]);
+        expect(widths).toEqual([6, 5, 5]);
+      });
+
+      it('does not limit fixed widths', () => {
+        const widths = [10];
+        const cells = [[mc(0, 0, 20), mc(0, 1, 20)]];
+        computeWidths(widths, cells, [5, 5]);
+        expect(widths).toEqual([10, 5]);
+      });
+
+      it('lets a spanning cell covering a limited column grow only the limited columns, up to their maximum', () => {
+        const widths: Array<number | null> = [];
+        const cells = [[mc(0, 0, 25, 3)], [mc(1, 0, 5), mc(1, 1, 5), mc(1, 2, 2)]];
+        computeWidths(widths, cells, [6]);
+        expect(widths).toEqual([6, 5, 2]); // the spanning cell wraps, the unlimited columns keep their width
+      });
+
+      it('grows unlimited columns as before for a spanning cell that covers no limited column', () => {
+        const cells = [[mc(0, 1, 25, 2)], [mc(1, 0, 5), mc(1, 1, 5), mc(1, 2, 2)]];
+        const withLimit: Array<number | null> = [];
+        const withoutLimits: Array<number | null> = [];
+        computeWidths(withLimit, cells, [6]);
+        computeWidths(withoutLimits, cells);
+        expect(withLimit).toEqual(withoutLimits);
+        expect(Number(withLimit[1]) + 1 + Number(withLimit[2])).toEqual(25);
+      });
+
+      it('grows spanned columns that have no content of their own', () => {
+        const widths: Array<number | null> = [];
+        const cells = [[mc(0, 0, 20, 2), mc(0, 2, 3)], [{ x: 1, y: 0 }]];
+        computeWidths(widths, cells, [3]);
+        expect(widths).toEqual([3, 16, 3]);
+      });
+
+      it('does not count on the width above a maximum for a spanning cell', () => {
+        const widths: Array<number | null> = [];
+        // column 0: a cell wanting 10 (limited to 5); a cell wanting 20 spanning columns 0 and 1
+        const cells = [[mc(0, 0, 20, 2)], [mc(1, 0, 10), mc(1, 1, 3)]];
+        computeWidths(widths, cells, [5]);
+        expect(widths).toEqual([5, 3]);
+      });
+
+      it('gives a spanning cell less than it wants if all columns are at their maximum', () => {
+        const widths: Array<number | null> = [];
+        const cells = [[mc(0, 0, 30, 2)], [mc(1, 0, 2), mc(1, 1, 2)]];
+        computeWidths(widths, cells, [5, 5]);
+        expect(widths).toEqual([5, 5]);
+      });
+
+      it('gives the same result as before without maximum widths', () => {
+        const cells = [[mc(0, 0, 25, 3)], [mc(1, 0, 30, 3)], [mc(2, 0, 4), mc(2, 1, 2), mc(2, 2, 1)]];
+        const a: Array<number | null> = [];
+        const b: Array<number | null> = [];
+        computeWidths(a, cells);
+        computeWidths(b, cells, []);
+        expect(b).toEqual(a);
+      });
+    });
   });
 
   describe('computeHeights', () => {

@@ -241,6 +241,43 @@ export default function examples(runTest: ExampleRunner): void {
     return [makeTable, expected];
   });
 
+  it('Use `maxColWidths` to limit column widths: longer content is wrapped instead of truncated', function () {
+    function makeTable() {
+      let table = new Table({
+        style: { border: [], head: [] },
+        head: ['ID', 'Description', 'Status'],
+        maxColWidths: [null, 20, 8], // columns stay as narrow as their content, up to the limit
+      });
+
+      table.push(
+        ['1', 'Short text', 'ok'],
+        ['2', 'Text longer than the limit wraps on word boundaries', 'in progress'],
+        ['3', 'Supercalifragilisticexpialidocious: long words are broken', 'done']
+      );
+
+      return table;
+    }
+
+    let expected = [
+      '┌────┬────────────────────┬────────┐',
+      '│ ID │ Description        │ Status │',
+      '├────┼────────────────────┼────────┤',
+      '│ 1  │ Short text         │ ok     │',
+      '├────┼────────────────────┼────────┤',
+      '│ 2  │ Text longer than   │ in     │',
+      '│    │ the limit wraps on │ progre │',
+      '│    │ word boundaries    │ ss     │',
+      '├────┼────────────────────┼────────┤',
+      '│ 3  │ Supercalifragilist │ done   │',
+      '│    │ icexpialidocious:  │        │',
+      '│    │ long words are     │        │',
+      '│    │ broken             │        │',
+      '└────┴────────────────────┴────────┘',
+    ];
+
+    return [makeTable, expected];
+  });
+
   it('Supports hyperlinking cell content using the href option', () => {
     function link(text: string) {
       return hyperlink('http://example.com', text);

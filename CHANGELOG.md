@@ -18,6 +18,9 @@
   `content` of `CellOptions` is optional, and the `debug`, `messages`, `Table.reset` and `TableStyle` APIs are typed.
 
 #### :rocket: Enhancement
+* `maxColWidths` caps automatic column widths and wraps content, including Unicode, ANSI and spans.
+* colors.js bright/background style names are accepted; Ansis helpers are rejected as styles.
+* OSC 8 hyperlinks are balanced across word and character breaks (BEL and ST terminators).
 * Written in TypeScript, with generated type definitions. Works from CommonJS and ES modules
   (`import Table from 'cli-table3'`).
 * Invalid style names in `style.head` / `style.border` (table or cell) are reported in `table.messages` (debug level 3).

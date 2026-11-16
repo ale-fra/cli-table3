@@ -40,12 +40,20 @@ const MIN_SIZE = 1;
  * Fills `sizes` (fixed sizes: numbers; others: anything else) with the size of every column
  * (row) of `table`, in place. Returns `sizes`.
  */
-function computeSizes(axis: Axis, sizes: Array<number | null | undefined>, table: readonly SizedCell[][]): number[] {
+function computeSizes(
+  axis: Axis,
+  sizes: Array<number | null | undefined>,
+  table: readonly SizedCell[][],
+  limits: readonly (number | undefined)[] = []
+): number[] {
   const isFixed = (index: number): boolean => typeof sizes[index] === 'number';
   // sparse: indexes without a non-spanning cell have no entry
   const result: number[] = [];
   const spanners: SizedCell[] = [];
   const auto: Record<number, number> = {};
+  const hasContent: boolean[] = [];
+  const limitOf = (index: number): number => (isFixed(index) ? Infinity : (limits[index] ?? Infinity));
+  const room = (index: number): number => limitOf(index) - (result[index] || 0);
 
   for (const row of table) {
     for (const cell of row) {
@@ -53,6 +61,7 @@ function computeSizes(axis: Axis, sizes: Array<number | null | undefined>, table
         spanners.push(cell);
       } else {
         const index = cell[axis.position];
+        if (typeof cell[axis.desired] === 'number') hasContent[index] = true;
         result[index] = Math.max(result[index] || 0, cell[axis.desired] || 0, MIN_SIZE);
       }
     }
@@ -64,21 +73,36 @@ function computeSizes(axis: Axis, sizes: Array<number | null | undefined>, table
     }
   });
 
+  result.forEach((size, index) => {
+    result[index] = Math.min(size, limitOf(index));
+  });
+
   for (const cell of spanners.toReversed()) {
     const span = cell[axis.span] ?? 1;
     const start = cell[axis.position];
     let existingSize = result[start];
-    let editable = isFixed(start) ? 0 : 1;
+    const coversLimit = Array.from({ length: span }, (_, i) => limitOf(start + i)).some((limit) => limit !== Infinity);
+    const canGrow = (index: number): boolean =>
+      !isFixed(index) && room(index) > 0 && (!coversLimit || limitOf(index) !== Infinity || !hasContent[index]);
+    let editable = canGrow(start) ? 1 : 0;
     if (existingSize !== undefined) {
       for (let i = 1; i < span; i++) {
         existingSize += 1 + Number(result[start + i]);
-        if (!isFixed(start + i)) {
+        if (canGrow(start + i)) {
           editable++;
         }
       }
     } else {
       existingSize = axis.spannerSize(cell);
-      if (!auto[start] || auto[start] < existingSize) {
+      if (limitOf(start) < existingSize) {
+        result[start] = limitOf(start);
+        existingSize = result[start];
+        editable = 0;
+        for (let i = 1; i < span; i++) {
+          existingSize += 1 + Number(result[start + i]);
+          if (canGrow(start + i)) editable++;
+        }
+      } else if (!auto[start] || auto[start] < existingSize) {
         auto[start] = existingSize;
       }
     }
@@ -88,8 +112,8 @@ function computeSizes(axis: Axis, sizes: Array<number | null | undefined>, table
     if (desired !== undefined && desired > existingSize) {
       let i = 0;
       while (editable > 0 && desired > existingSize) {
-        if (!isFixed(start + i)) {
-          const extra = Math.round((desired - existingSize) / editable);
+        if (canGrow(start + i)) {
+          const extra = Math.min(Math.round((desired - existingSize) / editable), room(start + i));
           existingSize += extra;
           result[start + i] = Number(result[start + i]) + extra;
           editable--;
@@ -107,8 +131,12 @@ function computeSizes(axis: Axis, sizes: Array<number | null | undefined>, table
 }
 
 /** Fills `widths` with the width of every column; see `computeSizes`. */
-export function computeWidths(widths: Array<number | null | undefined>, table: readonly SizedCell[][]): number[] {
-  return computeSizes(COLUMNS, widths, table);
+export function computeWidths(
+  widths: Array<number | null | undefined>,
+  table: readonly SizedCell[][],
+  limits: readonly (number | undefined)[] = []
+): number[] {
+  return computeSizes(COLUMNS, widths, table, limits);
 }
 
 /** Fills `heights` with the height of every row; see `computeSizes`. */

@@ -22,7 +22,7 @@ export interface TextUnit {
 
 /** SGR sequences and OSC 8 hyperlink sequences: zero width, never split. */
 function escapeSequencePattern(): RegExp {
-  return new RegExp(`${sgrPattern().source}|\u001b\\]8;[^\u0007]*\u0007`, 'g');
+  return new RegExp(`${sgrPattern().source}|${/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)/.source}`, 'g');
 }
 
 const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });

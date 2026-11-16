@@ -39,8 +39,8 @@ function resolveStyles(styles: ArrayLike<unknown>): Resolution {
       style = entry.startsWith('bgHex') ? style.bgHex(value) : style.hex(value);
     } else {
       // Style names are user input: look them up dynamically.
-      const next: unknown = (style as unknown as Record<string, unknown>)[STYLE_ALIASES.get(entry) ?? entry];
-      if (typeof next !== 'function') {
+      const next: unknown = (style as unknown as Record<string, unknown>)[toAnsisStyleName(entry)];
+      if (typeof next !== 'function' || typeof (next as Partial<Ansis>).open !== 'string') {
         return { invalid: entry };
       }
       style = next as Ansis;
@@ -75,4 +75,18 @@ export function invalidStyleMessage(styles: ArrayLike<unknown> | undefined, wher
   const { invalid } = resolution;
   const shown = typeof invalid === 'string' ? `"${invalid}"` : String(invalid);
   return `Invalid style ${shown} in ${where}; the text is not styled.`;
+}
+
+function toAnsisStyleName(name: string): string {
+  const bright = /^(bg)?[bB]right([A-Z][a-z]*)$/.exec(name);
+  if (bright) {
+    const color = String(bright[2]);
+    return bright[1] ? `bg${color}Bright` : `${color.toLowerCase()}Bright`;
+  }
+  const background = /^([a-z]+)BG$/.exec(name);
+  if (background) {
+    const color = String(background[1]);
+    return `bg${color.charAt(0).toUpperCase()}${color.slice(1)}`;
+  }
+  return STYLE_ALIASES.get(name) ?? name;
 }

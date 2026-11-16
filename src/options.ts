@@ -61,6 +61,8 @@ export interface TableStyle {
 /** The table options that are not merged one level deep (see `TableInstanceOptions`). */
 export interface TableOptions {
   truncate: string;
+  /** Maximum automatic widths including padding; fixed colWidths take precedence. */
+  maxColWidths?: number | Array<number | null | undefined>;
   /** Fixed column widths; `null` (or a missing entry) means "fit the content". */
   colWidths: Array<number | null>;
   /** Fixed row heights; `null` (or a missing entry) means "fit the content". */

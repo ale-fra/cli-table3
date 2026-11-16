@@ -2,9 +2,10 @@
  * The table: an array of rows that renders itself with `toString()`.
  */
 
-import type { LayoutCell, LineNumber } from './cell';
+import { Cell, type LayoutCell, type LineNumber } from './cell';
 import * as debug from './debug';
 import { makeTableLayout } from './layout-manager';
+import { resolveMaxColWidths } from './max-col-widths';
 import {
   type CellInput,
   type CellOptions,
@@ -120,9 +121,18 @@ export class Table extends Array<TableRow> {
       }
     }
 
+    const limits = resolveMaxColWidths(options.maxColWidths, cells);
+    const colWidths = computeWidths(options.colWidths, cells, limits);
+    for (const row of cells) {
+      for (const cell of row) {
+        if (cell instanceof Cell && limits.slice(cell.x, cell.x + cell.colSpan).some((limit) => limit !== undefined)) {
+          cell.wrapToWidth({ ...options, colWidths });
+        }
+      }
+    }
     const sized = {
       ...options,
-      colWidths: computeWidths(options.colWidths, cells),
+      colWidths,
       rowHeights: computeHeights(options.rowHeights, cells),
     };
     for (const row of cells) {

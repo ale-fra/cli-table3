@@ -23,3 +23,9 @@ const nested: Table.Cell = { content: { text: 'x' } };
 table.options = new Table().options;
 
 export { filtered, mapped, messages, nested, style, wordWrap };
+
+new Table({ maxColWidths: 12 });
+new Table({ maxColWidths: [null, 12] });
+// @ts-expect-error - limits must be numeric
+new Table({ maxColWidths: ['12'] });
+new Table({ maxColWidths: [undefined, 8] });
